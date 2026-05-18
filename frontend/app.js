@@ -113,33 +113,25 @@ function ago(d){if(d===0)return'just now';if(d===1)return'1d ago';return d+'d ag
 
 // ── API ──
 async function chkApi(){
-  updBar(false, true);
+  updBar(false,true);
   try{const r=await fetch(API+'/jobs',{signal:AbortSignal.timeout(20000)});if(r.ok){useApi=true;updBar(true);return true}}catch{}
   updBar(false);return false;
 }
-function updBar(live, loading=false){
+function updBar(live,loading=false){
   document.getElementById('apiDot').className='api-dot'+(live?' live':'');
-  document.getElementById('apiTxt').textContent=
-    loading?'Waking up server, please wait...':
-    live?'Backend connected — data live from MongoDB':
-    'Demo mode — 20 companies loaded. Run backend to connect MongoDB.';
-  document.getElementById('apiTxt').style.color=
-    loading?'var(--amber)':live?'var(--green)':'var(--amber)';
+  document.getElementById('apiTxt').textContent=loading?'Waking up server...':live?'Backend connected — data live from MongoDB':'Demo mode — 20 companies loaded.';
+  document.getElementById('apiTxt').style.color=loading?'var(--amber)':live?'var(--green)':'var(--amber)';
 }
 
 // ── Filter & Sort ──
 function filt(src){
   let j=[...src];
   if(srch){const q=srch.toLowerCase();j=j.filter(x=>{
-    const title=(x.title||'').toLowerCase();
-    const co=(x.co||x.company||'').toLowerCase();
-    const loc=(x.loc||x.location||'').toLowerCase();
-    const cat=(x.cat||x.category||'').toLowerCase();
-    return title.includes(q)||co.includes(q)||loc.includes(q)||cat.includes(q);
+    return(x.title||'').toLowerCase().includes(q)||(x.co||x.company||'').toLowerCase().includes(q)||(x.loc||x.location||'').toLowerCase().includes(q)||(x.cat||x.category||'').toLowerCase().includes(q);
   })}
-  if(aType!=='all')j=j.filter(x=>(x.type||'')=== aType);
-  if(aCat!=='all')j=j.filter(x=>(x.cat||x.category||'')=== aCat);
-  if(sortV==='feat')j.sort((a,b)=>(b.feat||b.featured?1:0)-(a.feat||a.featured?1:0));
+  if(aType!=='all')j=j.filter(x=>x.type===aType);
+  if(aCat!=='all')j=j.filter(x=>(x.cat||x.category)===aCat);
+  if(sortV==='feat')j.sort((a,b)=>((b.feat||b.featured)?1:0)-((a.feat||a.featured)?1:0));
   else if(sortV==='sal')j.sort((a,b)=>{const n=s=>parseInt((s||'0').replace(/[^\d]/g,''))||0;return n(b.sal||b.salary)-n(a.sal||a.salary)});
   else j.sort((a,b)=>(a.da||0)-(b.da||0));
   return j;
@@ -159,14 +151,14 @@ function render(src){
   updStats(j);
   if(!j.length){g.innerHTML='<div class="empty"><div class="empty-icon">◌</div><h3 style="font-family:Syne,sans-serif;font-size:1rem;color:var(--muted)">No roles match your filters</h3><p style="font-size:13px;margin-top:6px">Try adjusting your search or filters</p></div>';return}
   g.innerHTML=j.map(j=>{
-    const cl=clr(j.co||j.company);
+    const cl=clr(j.co||j.company||'');
     const tc=j.type==='Remote'?'trm':j.type==='Contract'?'tct':j.type==='Part-time'?'tpt':'tft';
     const sv=saved.has(j.id||j._id);
     return`<div class="jcard" onclick="det('${j.id||j._id}')">
       ${(j.feat||j.featured)?'<div class="feat-badge">★ Featured</div>':''}
       <div class="ct">
         <div class="ctl">
-          <div class="av" style="background:${cl.bg};color:${cl.c}">${ini(j.co||j.company)}</div>
+          <div class="av" style="background:${cl.bg};color:${cl.c}">${ini(j.co||j.company||'')}</div>
           <div><div class="jt">${j.title}</div><div class="jco">${j.co||j.company} · ${j.loc||j.location}</div></div>
         </div>
         <button class="ibtn${sv?' sv':''}" title="${sv?'Unsave':'Save'}" onclick="event.stopPropagation();tog('${j.id||j._id}',this)">${sv?'♥':'♡'}</button>
