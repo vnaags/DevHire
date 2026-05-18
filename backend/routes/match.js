@@ -36,6 +36,12 @@ Respond ONLY with this JSON (no markdown, no extra text):
     });
 
     const data = await response.json();
+    console.log('Gemini raw response:', JSON.stringify(data));
+
+    if (!data.candidates || !data.candidates[0]) {
+      return res.status(500).json({ message: 'Gemini API error', error: JSON.stringify(data) });
+    }
+
     const raw = data.candidates[0].content.parts[0].text.trim();
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
     res.json(parsed);
