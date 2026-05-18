@@ -10,7 +10,8 @@ router.post('/', async (req, res) => {
     }
 
     const prompt = `You are an expert recruiter. Analyse how well this resume matches the job and return a JSON object only.
-
+    console.log('GEMINI_API_KEY exists:', !!process.env.GEMINI_API_KEY);
+    console.log('Making request to Gemini...');
 JOB TITLE: ${jobTitle}
 JOB DESCRIPTION: ${jobDescription}
 REQUIREMENTS: ${(requirements || []).join(', ')}
@@ -34,6 +35,8 @@ Respond ONLY with this JSON (no markdown, no extra text):
         contents: [{ parts: [{ text: prompt }] }]
       })
     });
+    console.log('Gemini status:', response.status);
+    
 
     const data = await response.json();
     console.log('Gemini raw response:', JSON.stringify(data));
