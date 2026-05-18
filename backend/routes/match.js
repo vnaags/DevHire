@@ -1,8 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const Anthropic = require('@anthropic-ai/sdk');
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 router.post('/', async (req, res) => {
   try {
@@ -30,13 +27,16 @@ Respond ONLY with this JSON (no markdown, no extra text):
   "summary": "<2-3 sentence summary>"
 }`;
 
-    const message = await client.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: prompt }]
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
     });
 
-    const raw = message.content[0].text.trim();
+    const data = await response.json();
+    const raw = data.candidates[0].content.parts[0].text.trim();
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
     res.json(parsed);
 
