@@ -107,8 +107,8 @@ const JOBS=[
 
 // ── Color system ──
 const CLR=[{bg:'rgba(0,212,255,0.1)',c:'#00d4ff'},{bg:'rgba(124,58,237,0.1)',c:'#a78bfa'},{bg:'rgba(6,255,165,0.08)',c:'#06ffa5'},{bg:'rgba(255,183,3,0.1)',c:'#ffb703'},{bg:'rgba(255,77,109,0.08)',c:'#ff4d6d'},{bg:'rgba(99,179,237,0.1)',c:'#63b3ed'},{bg:'rgba(236,72,153,0.08)',c:'#f472b6'},{bg:'rgba(52,211,153,0.08)',c:'#34d399'}];
-function clr(s){let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))%CLR.length;return CLR[h]}
-function ini(s){return s.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+function clr(s){if(!s)return CLR[0];let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))%CLR.length;return CLR[h]}
+function ini(s){if(!s)return'??';return s.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 function ago(d){if(d===0)return'just now';if(d===1)return'1d ago';return d+'d ago'}
 
 // ── API ──
@@ -130,11 +130,17 @@ function updBar(live, loading=false){
 // ── Filter & Sort ──
 function filt(src){
   let j=[...src];
-  if(srch){const q=srch.toLowerCase();j=j.filter(x=>x.title.toLowerCase().includes(q)||x.co.toLowerCase().includes(q)||x.loc.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)||(x.reqs||[]).some(r=>r.toLowerCase().includes(q)))}
-  if(aType!=='all')j=j.filter(x=>x.type===aType);
-  if(aCat!=='all')j=j.filter(x=>x.cat===aCat);
-  if(sortV==='feat')j.sort((a,b)=>(b.feat?1:0)-(a.feat?1:0));
-  else if(sortV==='sal')j.sort((a,b)=>{const n=s=>parseInt((s||'0').replace(/[^\d]/g,''))||0;return n(b.sal)-n(a.sal)});
+  if(srch){const q=srch.toLowerCase();j=j.filter(x=>{
+    const title=(x.title||'').toLowerCase();
+    const co=(x.co||x.company||'').toLowerCase();
+    const loc=(x.loc||x.location||'').toLowerCase();
+    const cat=(x.cat||x.category||'').toLowerCase();
+    return title.includes(q)||co.includes(q)||loc.includes(q)||cat.includes(q);
+  })}
+  if(aType!=='all')j=j.filter(x=>(x.type||'')=== aType);
+  if(aCat!=='all')j=j.filter(x=>(x.cat||x.category||'')=== aCat);
+  if(sortV==='feat')j.sort((a,b)=>(b.feat||b.featured?1:0)-(a.feat||a.featured?1:0));
+  else if(sortV==='sal')j.sort((a,b)=>{const n=s=>parseInt((s||'0').replace(/[^\d]/g,''))||0;return n(b.sal||b.salary)-n(a.sal||a.salary)});
   else j.sort((a,b)=>(a.da||0)-(b.da||0));
   return j;
 }
@@ -153,15 +159,15 @@ function render(src){
   updStats(j);
   if(!j.length){g.innerHTML='<div class="empty"><div class="empty-icon">◌</div><h3 style="font-family:Syne,sans-serif;font-size:1rem;color:var(--muted)">No roles match your filters</h3><p style="font-size:13px;margin-top:6px">Try adjusting your search or filters</p></div>';return}
   g.innerHTML=j.map(j=>{
-    const cl=clr(j.co);
+    const cl=clr(j.co||j.company);
     const tc=j.type==='Remote'?'trm':j.type==='Contract'?'tct':j.type==='Part-time'?'tpt':'tft';
     const sv=saved.has(j.id||j._id);
     return`<div class="jcard" onclick="det('${j.id||j._id}')">
-      ${j.feat?'<div class="feat-badge">★ Featured</div>':''}
+      ${(j.feat||j.featured)?'<div class="feat-badge">★ Featured</div>':''}
       <div class="ct">
         <div class="ctl">
-          <div class="av" style="background:${cl.bg};color:${cl.c}">${ini(j.co)}</div>
-          <div><div class="jt">${j.title}</div><div class="jco">${j.co} · ${j.loc}</div></div>
+          <div class="av" style="background:${cl.bg};color:${cl.c}">${ini(j.co||j.company)}</div>
+          <div><div class="jt">${j.title}</div><div class="jco">${j.co||j.company} · ${j.loc||j.location}</div></div>
         </div>
         <button class="ibtn${sv?' sv':''}" title="${sv?'Unsave':'Save'}" onclick="event.stopPropagation();tog('${j.id||j._id}',this)">${sv?'♥':'♡'}</button>
       </div>
@@ -170,9 +176,9 @@ function render(src){
         <span class="tag tcat">${j.cat}</span>
         ${j.exp?`<span class="tag texp">${j.exp}</span>`:''}
       </div>
-      <div class="jdesc">${j.desc}</div>
+      <div class="jdesc">${j.desc||j.description}</div>
       <div class="cf">
-        <div class="sal">${j.sal||'Competitive'}</div>
+        <div class="sal">${j.sal||j.salary||'Competitive'}</div>
         <div class="cfr">
           <span class="posted">${ago(j.da||0)}</span>
           <button class="btn-ap" onclick="event.stopPropagation();qap('${j.id||j._id}')">Apply →</button>
