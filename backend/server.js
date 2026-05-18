@@ -73,3 +73,5 @@ app.listen(PORT, () => {
   console.log(`📡 Jobs API     → http://localhost:${PORT}/api/jobs`);
   console.log(`🤖 Resume Match → http://localhost:${PORT}/api/match`);
 });
+
+app.use('/api/jobs', require('./routes/jobs'));
