@@ -1,9 +1,8 @@
 const express = require('express');
-const router = express.Router();
-const Job = require('../models/Job');       // ← was missing!
-const SEED = require('../data/jobs');       // adjust path if needed
+const router  = express.Router();
+const Job     = require('../models/Job');
+const SEED    = require('../data/jobs');
 
-// GET all jobs (with search/filter)
 router.get('/', async (req, res) => {
   try {
     const { search, type, category } = req.query;
@@ -23,7 +22,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET single job
 router.get('/:id', async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
@@ -34,19 +32,17 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// SEED (must be before POST /)
 router.post('/seed', async (req, res) => {
   try {
     const existing = await Job.countDocuments();
-    if (existing > 0) return res.json({ message: `Database already has ${existing} jobs.`, count: existing });
+    if (existing > 0) return res.json({ message: `Already has ${existing} jobs.`, count: existing });
     const jobs = await Job.insertMany(SEED);
-    res.status(201).json({ message: `Seeded ${jobs.length} jobs successfully!`, count: jobs.length });
+    res.status(201).json({ message: `Seeded ${jobs.length} jobs!`, count: jobs.length });
   } catch (err) {
-    res.status(500).json({ message: 'Error seeding database', error: err.message });
+    res.status(500).json({ message: 'Error seeding', error: err.message });
   }
 });
 
-// CREATE job
 router.post('/', async (req, res) => {
   try {
     const job = new Job(req.body);
@@ -57,7 +53,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// UPDATE job
 router.put('/:id', async (req, res) => {
   try {
     const job = await Job.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
@@ -68,7 +63,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE job
 router.delete('/:id', async (req, res) => {
   try {
     const job = await Job.findByIdAndDelete(req.params.id);
