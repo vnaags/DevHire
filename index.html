@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevHire — Find Your Next Role</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="resetAll()">Dev<span>Hire</span></div>
+  <div class="nav-right">
+    <button class="nav-saved" onclick="openSaved()">
+      ♡ Saved <span class="saved-cnt" id="scnt">0</span>
+    </button>
+    <!-- Auth button — swapped by JS -->
+    <div id="navAuth">
+      <button class="btn-login" onclick="openAuth()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Sign In
+      </button>
+    </div>
+    <button class="btn-post-nav" onclick="guardedPost()">+ Post a Job</button>
+  </div>
+</nav>
+
+<!-- User dropdown menu (outside nav so it overlays content) -->
+<div class="user-menu" id="userMenu">
+  <div class="user-menu-header">
+    <div class="user-menu-name" id="menuName">—</div>
+    <div class="user-menu-email" id="menuEmail">—</div>
+  </div>
+  <button class="user-menu-item" onclick="openSaved();closeMenu()">♡ &nbsp;Saved Jobs</button>
+  <button class="user-menu-item danger" onclick="authLogout()">↩ &nbsp;Sign Out</button>
+</div>
+
+<div class="api-bar" id="apiBar">
+  <div class="api-dot" id="apiDot"></div>
+  <span id="apiTxt" style="color:var(--muted)">Connecting...</span>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">20 Companies · 20 Open Roles</div>
+  <h1>Your Next Great<br><span>Tech Role Awaits</span></h1>
+  <p class="hero-sub">Hand-picked opportunities from India's best product companies. Real jobs, real impact.</p>
+  <div class="search-wrap">
+    <span class="s-icon">⌕</span>
+    <input id="si" placeholder="Search role, company, skill, city..." oninput="dbs()" onkeydown="if(event.key==='Enter')go()">
+    <button class="btn-search" onclick="go()">Search</button>
+  </div>
+  <div class="filters">
+    <div class="filter-row" id="typeRow">
+      <button class="chip on" data-t="all" onclick="setT('all',this)">All Types</button>
+      <button class="chip" data-t="Full-time" onclick="setT('Full-time',this)">Full-time</button>
+      <button class="chip" data-t="Remote" onclick="setT('Remote',this)">Remote</button>
+      <button class="chip" data-t="Contract" onclick="setT('Contract',this)">Contract</button>
+      <button class="chip" data-t="Part-time" onclick="setT('Part-time',this)">Part-time</button>
+    </div>
+    <div class="filter-row" id="catRow">
+      <button class="chip cat on" data-c="all" onclick="setC('all',this)">All Categories</button>
+      <button class="chip cat" data-c="Frontend" onclick="setC('Frontend',this)">Frontend</button>
+      <button class="chip cat" data-c="Backend" onclick="setC('Backend',this)">Backend</button>
+      <button class="chip cat" data-c="Full Stack" onclick="setC('Full Stack',this)">Full Stack</button>
+      <button class="chip cat" data-c="DevOps" onclick="setC('DevOps',this)">DevOps</button>
+      <button class="chip cat" data-c="Mobile" onclick="setC('Mobile',this)">Mobile</button>
+      <button class="chip cat" data-c="Data" onclick="setC('Data',this)">Data</button>
+      <button class="chip cat" data-c="Design" onclick="setC('Design',this)">Design</button>
+      <button class="chip cat" data-c="Product" onclick="setC('Product',this)">Product</button>
+    </div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="sJ"><em>20</em></div><div class="stat-label">Open Roles</div></div>
+  <div class="stat"><div class="stat-num" id="sR"><em>7</em></div><div class="stat-label">Remote Jobs</div></div>
+  <div class="stat"><div class="stat-num" id="sC"><em>20</em></div><div class="stat-label">Companies</div></div>
+  <div class="stat"><div class="stat-num" id="sS"><em>0</em></div><div class="stat-label">Saved</div></div>
+</div>
+
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title">Latest Opportunities</div>
+    <div class="sec-right">
+      <div class="job-cnt" id="jcnt">20 roles</div>
+      <select class="sort-sel" onchange="srt(this.value)">
+        <option value="new">Newest First</option>
+        <option value="feat">Featured First</option>
+        <option value="sal">Salary High–Low</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<button class="fab" onclick="openPost()">✦ Post a Job</button>
+
+<!-- DETAIL OVERLAY -->
+<div class="overlay" id="dO" onclick="oc(event,'dO')">
+  <div class="dm">
+    <div class="dm-head">
+      <div class="dm-av" id="dAv"></div>
+      <div class="dm-ci"><div class="dm-cn" id="dCn"></div><div class="dm-cm" id="dCm"></div></div>
+      <button class="xcl" onclick="cl('dO')">✕</button>
+    </div>
+    <div class="dm-body" id="dBd"></div>
+    <div class="dm-foot">
+      <button class="btn-ab" onclick="apFD()">Apply Now →</button>
+      <button class="btn-sb" id="dSv" onclick="svFD()">♡ Save Job</button>
+      <button class="btn-sh" onclick="openMatcher()" title="Match your resume to this job" style="border-color:rgba(124,58,237,0.4);color:var(--purple)">🎯 Match</button>
+      <button class="btn-sh" onclick="share()" title="Copy job details">⎘ Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPLY OVERLAY -->
+<div class="overlay" id="aO" onclick="oc(event,'aO')">
+  <div class="sm">
+    <div class="mh"><div class="mt">Apply for Role</div><button class="xcl" onclick="cl('aO')">✕</button></div>
+    <div class="mb">
+      <div class="ap-prev" id="aPrv"></div>
+      <div class="frow">
+        <div class="field"><label>Full Name *</label><input id="an" placeholder="Your name"></div>
+        <div class="field"><label>Email *</label><input id="ae" type="email" placeholder="you@email.com"></div>
+      </div>
+      <div class="field"><label>Phone</label><input id="aph" placeholder="+91 98765 43210"></div>
+      <div class="field"><label>LinkedIn / Portfolio *</label><input id="al" placeholder="https://linkedin.com/in/you"></div>
+      <div class="field"><label>Experience Level</label>
+        <select id="axp">
+          <option value="">Select...</option>
+          <option>0–1 years (Fresher)</option><option>1–2 years</option><option>2–4 years</option>
+          <option>4–6 years</option><option>6–10 years</option><option>10+ years</option>
+        </select>
+      </div>
+      <div class="field"><label>Cover Note *</label><textarea id="ac" placeholder="Why are you excited about this role? What makes you a great fit?"></textarea></div>
+      <button class="btn-sub" onclick="subAp()">Send Application →</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST OVERLAY -->
+<div class="overlay" id="pO" onclick="oc(event,'pO')">
+  <div class="pm">
+    <div class="mh"><div class="mt">Post a New Role</div><button class="xcl" onclick="cl('pO')">✕</button></div>
+    <div class="mb">
+      <div class="frow">
+        <div class="field"><label>Job Title *</label><input id="ft" placeholder="e.g. Senior React Developer"></div>
+        <div class="field"><label>Company Name *</label><input id="fc" placeholder="e.g. Acme Corp"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>About Company</label><input id="fcd" placeholder="One-liner about your company"></div>
+        <div class="field"><label>Website</label><input id="fw" placeholder="yourcompany.com"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Location *</label><input id="fl" placeholder="e.g. Bangalore / Remote"></div>
+        <div class="field"><label>Job Type *</label>
+          <select id="ftp"><option value="">Select...</option><option>Full-time</option><option>Remote</option><option>Contract</option><option>Part-time</option></select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Category *</label>
+          <select id="fca"><option value="">Select...</option><option>Frontend</option><option>Backend</option><option>Full Stack</option><option>DevOps</option><option>Mobile</option><option>Data</option><option>Design</option><option>Product</option></select>
+        </div>
+        <div class="field"><label>Salary Range</label><input id="fsa" placeholder="e.g. ₹18–25 LPA"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Experience</label><input id="fex" placeholder="e.g. 3–5 years"></div>
+        <div class="field"><label>Founded Year</label><input id="ffo" placeholder="e.g. 2018"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Employees</label><input id="fem" placeholder="e.g. 500+"></div>
+        <div class="field"></div>
+      </div>
+      <div class="field"><label>Job Description *</label><textarea id="fde" placeholder="Describe the role and team..."></textarea></div>
+      <div class="field"><label>Responsibilities (one per line)</label><textarea id="fre" placeholder="Build React components&#10;Collaborate with backend&#10;Review PRs"></textarea></div>
+      <div class="field"><label>Requirements (one per line) *</label><textarea id="frq" placeholder="3+ years React&#10;TypeScript&#10;Strong CSS"></textarea></div>
+      <div class="field"><label>Nice to Have (one per line)</label><textarea id="fni" placeholder="GraphQL&#10;Open source contributions"></textarea></div>
+      <button class="btn-sub" onclick="subJob()">Publish Job Listing →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVED OVERLAY -->
+<div class="overlay" id="svO" onclick="oc(event,'svO')">
+  <div class="savm">
+    <div class="mh"><div class="mt">♡ Saved Jobs</div><button class="xcl" onclick="cl('svO')">✕</button></div>
+    <div class="mb" id="svBd"></div>
+  </div>
+</div>
+
+<!-- RESUME MATCHER OVERLAY -->
+<div class="overlay" id="rmO" onclick="oc(event,'rmO')">
+  <div class="sm rm-modal">
+    <div class="mh">
+      <div class="mt">🎯 AI Resume Matcher</div>
+      <button class="xcl" onclick="cl('rmO')">✕</button>
+    </div>
+    <!-- Job context bar -->
+    <div style="padding:12px 1.5rem;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px" id="rmJobBar"></div>
+    <!-- Input tabs -->
+    <div class="rm-tabs" style="padding-top:1rem">
+      <button class="rm-tab on" id="rmTabFile" onclick="rmSetTab('file')">📎 Upload File</button>
+      <button class="rm-tab" id="rmTabPaste" onclick="rmSetTab('paste')">📝 Paste Text</button>
+    </div>
+    <div class="mb" style="max-height:65vh;overflow-y:auto">
+      <!-- File upload panel -->
+      <div id="rmPanelFile">
+        <div class="rm-drop" id="rmDrop"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             ondrop="rmOnDrop(event)">
+          <input type="file" id="rmFileIn" accept=".txt,.md,.pdf" onchange="rmOnFile(this)">
+          <div class="rm-drop-icon">📄</div>
+          <div class="rm-drop-lbl">
+            <strong>Click to upload</strong> or drag & drop<br>
+            <span style="font-size:11px;opacity:0.6">.txt or .md (PDF: text will be extracted client-side)</span>
+          </div>
+        </div>
+        <div class="rm-file-ok" id="rmFileOk">
+          <span style="font-size:18px">✓</span>
+          <span id="rmFileName">resume.txt loaded</span>
+          <button onclick="rmClearFile()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;margin-left:auto;font-size:16px">✕</button>
+        </div>
+      </div>
+      <!-- Paste panel -->
+      <div id="rmPanelPaste" style="display:none">
+        <div class="field" style="margin-bottom:0">
+          <label>Paste your resume text</label>
+          <textarea id="rmPasteIn" style="min-height:160px" placeholder="Paste your full resume here — work experience, skills, education, projects..."></textarea>
+        </div>
+      </div>
+      <!-- Analyse button -->
+      <button class="btn-sub" id="rmAnalyseBtn" onclick="rmAnalyse()" style="margin-top:1rem;background:linear-gradient(135deg,var(--accent2),#5b21b6);color:#fff">Analyse Match →</button>
+      <!-- Spinner -->
+      <div class="rm-spinner" id="rmSpinner" style="display:none">
+        <div class="rm-spin"></div>
+        <span>AI is reading your resume…</span>
+      </div>
+      <!-- Results -->
+      <div class="rm-result" id="rmResult" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authO" onclick="oc(event,'authO')">
+  <div class="sm auth-modal">
+    <div class="mh"><div class="mt">Welcome to DevHire</div><button class="xcl" onclick="cl('authO')">✕</button></div>
+    <div class="auth-hero">
+      <div class="auth-logo">Dev<span>Hire</span></div>
+      <p class="auth-sub">Sign in to save jobs, post listings, and match your resume against live roles.</p>
+    </div>
+    <div class="auth-divider"><span>continue with</span></div>
+    <button class="btn-google" onclick="authWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.1 0 5.8 1.1 8 2.9l6-6C34.3 3.2 29.5 1 24 1 14.8 1 7 6.7 3.7 14.6l7 5.4C12.4 13.7 17.7 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/>
+        <path fill="#FBBC05" d="M10.7 28.4A14.8 14.8 0 0 1 9.5 24c0-1.5.3-3 .7-4.4l-7-5.4A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l8.1-6.4z"/>
+        <path fill="#34A853" d="M24 47c5.5 0 10.1-1.8 13.5-4.9l-7.5-5.8c-1.9 1.3-4.3 2.1-6 2.1-6.3 0-11.6-4.2-13.5-10l-8.1 6.4C7 40.3 14.8 47 24 47z"/>
+      </svg>
+      Continue with Google
+    </button>
+    <p class="auth-note">By signing in you agree to our Terms of Service. We only request your name, email, and profile photo from Google — nothing else.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

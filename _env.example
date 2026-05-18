@@ -1,0 +1,5 @@
+# Copy this file, rename to .env, fill in your values
+# NEVER commit .env to GitHub
+
+MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/devhire?retryWrites=true&w=majority
+PORT=5000
