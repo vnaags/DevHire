@@ -1,7 +1,7 @@
 const API='https://devhire-jdmi.onrender.com/api';
 let useApi=true,aType='all',aCat='all',sortV='new',srch='',curJ=null,dbT=null;
 let saved=new Set(JSON.parse(localStorage.getItem('dh_sv')||'[]'));
-
+ 
 const JOBS=[
   {id:'1',title:'Senior Frontend Engineer',co:'Razorpay',cod:'India\'s leading payment gateway powering 8M+ businesses with full-stack financial solutions.',web:'razorpay.com',fnd:'2014',emp:'3,000+',loc:'Bangalore, India',type:'Full-time',cat:'Frontend',sal:'₹28–42 LPA',exp:'5+ years',feat:true,da:1,
    desc:'Join Razorpay\'s Dashboard Experience team to own the frontend for products used by 8 million merchants daily. You\'ll work at the intersection of design and engineering, shipping features that directly impact how India\'s businesses handle money.',
@@ -104,31 +104,28 @@ const JOBS=[
    reqs:['6+ years DevOps or platform engineering','Expert AWS (solutions architect level)','Enterprise-scale Kubernetes','Terraform and GitOps workflows','Excellent English for async-first culture'],
    nth:['Atlassian product experience','Global SaaS company background','CNCF project contributions']}
 ];
-
+ 
 // ── Color system ──
 const CLR=[{bg:'rgba(0,212,255,0.1)',c:'#00d4ff'},{bg:'rgba(124,58,237,0.1)',c:'#a78bfa'},{bg:'rgba(6,255,165,0.08)',c:'#06ffa5'},{bg:'rgba(255,183,3,0.1)',c:'#ffb703'},{bg:'rgba(255,77,109,0.08)',c:'#ff4d6d'},{bg:'rgba(99,179,237,0.1)',c:'#63b3ed'},{bg:'rgba(236,72,153,0.08)',c:'#f472b6'},{bg:'rgba(52,211,153,0.08)',c:'#34d399'}];
 function clr(s){if(!s||typeof s!=='string')return CLR[0];let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))%CLR.length;return CLR[h]}
 function ini(s){if(!s||typeof s!=='string')return'??';return s.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 function ago(d){if(d===0)return'just now';if(d===1)return'1d ago';return d+'d ago'}
-
+ 
 // ── API ──
 async function chkApi(){
-  updBar(false,true);
   try{const r=await fetch(API+'/jobs',{signal:AbortSignal.timeout(20000)});if(r.ok){useApi=true;updBar(true);return true}}catch{}
   updBar(false);return false;
 }
-function updBar(live,loading=false){
+function updBar(live){
   document.getElementById('apiDot').className='api-dot'+(live?' live':'');
-  document.getElementById('apiTxt').textContent=loading?'Waking up server...':live?'Backend connected — data live from MongoDB':'Demo mode — 20 companies loaded.';
-  document.getElementById('apiTxt').style.color=loading?'var(--amber)':live?'var(--green)':'var(--amber)';
+  document.getElementById('apiTxt').textContent=live?'Backend connected — data live from MongoDB':'Demo mode — 20 companies loaded. Run backend to connect MongoDB.';
+  document.getElementById('apiTxt').style.color=live?'var(--green)':'var(--amber)';
 }
-
+ 
 // ── Filter & Sort ──
 function filt(src){
   let j=[...src];
-  if(srch){const q=srch.toLowerCase();j=j.filter(x=>{
-    return(x.title||'').toLowerCase().includes(q)||(x.co||x.company||'').toLowerCase().includes(q)||(x.loc||x.location||'').toLowerCase().includes(q)||(x.cat||x.category||'').toLowerCase().includes(q);
-  })}
+  if(srch){const q=srch.toLowerCase();j=j.filter(x=>(x.title||'').toLowerCase().includes(q)||(x.co||x.company||'').toLowerCase().includes(q)||(x.loc||x.location||'').toLowerCase().includes(q)||(x.cat||x.category||'').toLowerCase().includes(q))}
   if(aType!=='all')j=j.filter(x=>x.type===aType);
   if(aCat!=='all')j=j.filter(x=>(x.cat||x.category)===aCat);
   if(sortV==='feat')j.sort((a,b)=>((b.feat||b.featured)?1:0)-((a.feat||a.featured)?1:0));
@@ -142,7 +139,7 @@ function srt(v){sortV=v;render()}
 function dbs(){clearTimeout(dbT);dbT=setTimeout(go,300)}
 function go(){srch=document.getElementById('si').value.trim();render()}
 function resetAll(){srch='';aType='all';aCat='all';sortV='new';document.getElementById('si').value='';document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));document.querySelector('[data-t="all"]').classList.add('on');document.querySelector('[data-c="all"]').classList.add('on');document.querySelector('.sort-sel').value='new';render()}
-
+ 
 // ── Render ──
 function render(src){
   const j=filt(src||window._J||JOBS);
@@ -184,11 +181,11 @@ function updStats(j){
   document.getElementById('sC').innerHTML=`<em>${[...new Set(j.map(x=>x.co))].length}</em>`;
   document.getElementById('sS').innerHTML=`<em>${saved.size}</em>`;
 }
-
+ 
 // ── Detail modal ──
 function det(id){
   const j=find(id);if(!j)return;curJ=j;
-  const cl=clr(j.co);
+  const cl=clr(j.co||j.company||'');
   const tc=j.type==='Remote'?'trm':j.type==='Contract'?'tct':j.type==='Part-time'?'tpt':'tft';
   const sv=saved.has(id);
   const dAv=document.getElementById('dAv');
@@ -216,13 +213,13 @@ function det(id){
 }
 function apFD(){if(curJ)openAp(curJ.id||curJ._id)}
 function svFD(){if(curJ)tog(curJ.id||curJ._id,null,true)}
-
+ 
 // ── Apply modal ──
 function qap(id){openAp(id)}
 function openAp(id){
   const j=find(id);if(!j)return;curJ=j;
-  const cl=clr(j.co);
-  document.getElementById('aPrv').innerHTML=`<div class="ap-av" style="background:${cl.bg};color:${cl.c}">${ini(j.co)}</div><div><div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:2px">${j.title}</div><div style="font-size:12px;color:var(--muted)">${j.co} · ${j.loc}</div></div>`;
+  const cl=clr(j.co||j.company||'');
+  document.getElementById('aPrv').innerHTML=`<div class="ap-av" style="background:${cl.bg};color:${cl.c}">${ini(j.co||j.company||'')}</div><div><div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:2px">${j.title}</div><div style="font-size:12px;color:var(--muted)">${j.co||j.company} · ${j.loc||j.location}</div></div>`;
   ['an','ae','aph','al','ac'].forEach(i=>{const e=document.getElementById(i);e.value='';e.classList.remove('err')});
   document.getElementById('axp').value='';
   op('aO');
@@ -240,7 +237,7 @@ function subAp(){
   if(!ok){tost('Please fill all required fields','warn');return}
   cl('aO');tost(`✓ Application sent to ${curJ?.co}! They'll review and get in touch.`);
 }
-
+ 
 // ── Post Job ──
 function openPost(){op('pO')}
 async function subJob(){
@@ -279,7 +276,7 @@ async function subJob(){
   ['ft','fc','fcd','fw','fl','fsa','fex','ffo','fem','fde','fre','frq','fni'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});
   document.getElementById('ftp').value='';document.getElementById('fca').value='';
 }
-
+ 
 // ── Save / Bookmark ──
 function tog(id,btn,fromDet){
   if(saved.has(id)){saved.delete(id);tost('Removed from saved jobs','warn')}
@@ -299,7 +296,7 @@ function updSaved(){
   const n=saved.size;const el=document.getElementById('scnt');
   el.textContent=n;el.style.display=n?'flex':'none';
 }
-
+ 
 // ── Saved Panel ──
 function openSaved(){
   const bd=document.getElementById('svBd');
@@ -308,28 +305,28 @@ function openSaved(){
   else bd.innerHTML=j.map(x=>{const cl=clr(x.co);return`<div class="sv-item" onclick="cl('svO');det('${x.id||x._id}')"><div style="width:36px;height:36px;border-radius:8px;background:${cl.bg};color:${cl.c};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;flex-shrink:0">${ini(x.co)}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.title}</div><div style="font-size:12px;color:var(--muted)">${x.co} · ${x.loc}</div></div><button style="background:transparent;border:none;color:var(--red);cursor:pointer;font-size:14px;flex-shrink:0;padding:4px" onclick="event.stopPropagation();tog('${x.id||x._id}',null);openSaved()" title="Remove">✕</button></div>`}).join('');
   op('svO');
 }
-
+ 
 // ── Share ──
 function share(){
   if(!curJ)return;
   navigator.clipboard.writeText(`${curJ.title} at ${curJ.co} — ${curJ.sal||'Competitive'} | ${curJ.loc}\nhttps://${curJ.web||'devhire.app'}`).then(()=>tost('✓ Job link copied to clipboard!'));
 }
-
+ 
 // ── Overlays ──
 function op(id){document.getElementById(id).classList.add('open')}
 function cl(id){document.getElementById(id).classList.remove('open')}
 function oc(e,id){if(e.target===document.getElementById(id))cl(id)}
 // keydown escape handled in auth section below
-
+ 
 // ── Toast ──
 function tost(msg,t=''){
   const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(t?' '+t:'');
   clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3200);
 }
-
+ 
 // ── Utils ──
 function find(id){return(window._J||JOBS).find(x=>(x.id||x._id)===id)||JOBS.find(x=>(x.id||x._id)===id)}
-
+ 
 // ── Seed ──
 async function seedDb(){
   if(!useApi)return;
@@ -338,7 +335,7 @@ async function seedDb(){
     if(ex.length===0)await fetch(API+'/jobs/seed',{method:'POST',headers:{'Content-Type':'application/json'}});
   }catch{}
 }
-
+ 
 // ── Init ──
 async function init(){
   updSaved();
@@ -352,7 +349,7 @@ async function init(){
 // ── Resume Matcher ──
 let rmTab = 'file';
 let rmFileText = '';
-
+ 
 function openMatcher() {
   if (!curJ) return;
   const cl = clr(curJ.co);
@@ -373,7 +370,7 @@ function openMatcher() {
   document.getElementById('rmFileIn').value = '';
   op('rmO');
 }
-
+ 
 function rmSetTab(t) {
   rmTab = t;
   document.getElementById('rmTabFile').className = 'rm-tab' + (t === 'file' ? ' on' : '');
@@ -381,7 +378,7 @@ function rmSetTab(t) {
   document.getElementById('rmPanelFile').style.display = t === 'file' ? 'block' : 'none';
   document.getElementById('rmPanelPaste').style.display = t === 'paste' ? 'block' : 'none';
 }
-
+ 
 function rmOnFile(input) {
   const file = input.files[0];
   if (!file) return;
@@ -393,7 +390,7 @@ function rmOnFile(input) {
   };
   reader.readAsText(file);
 }
-
+ 
 function rmOnDrop(e) {
   e.preventDefault();
   document.getElementById('rmDrop').classList.remove('drag');
@@ -402,23 +399,23 @@ function rmOnDrop(e) {
   const fakeInput = { files: [file] };
   rmOnFile(fakeInput);
 }
-
+ 
 function rmClearFile() {
   rmFileText = '';
   document.getElementById('rmFileIn').value = '';
   document.getElementById('rmFileOk').classList.remove('show');
 }
-
+ 
 async function rmAnalyse() {
   const resumeText = rmTab === 'paste'
     ? document.getElementById('rmPasteIn').value.trim()
     : rmFileText.trim();
-
+ 
   if (!resumeText) {
     tost(rmTab === 'paste' ? 'Please paste your resume text first.' : 'Please upload a resume file first.', 'warn');
     return;
   }
-
+ 
   // Build job description string
   const j = curJ;
   const jobDescription = [
@@ -427,18 +424,18 @@ async function rmAnalyse() {
     j.resp && j.resp.length ? 'Responsibilities:\n' + j.resp.join('\n') : '',
     j.nth  && j.nth.length  ? 'Nice to have:\n'    + j.nth.join('\n')  : ''
   ].filter(Boolean).join('\n\n');
-
+ 
   document.getElementById('rmAnalyseBtn').style.display = 'none';
   document.getElementById('rmSpinner').style.display = 'flex';
   document.getElementById('rmResult').style.display = 'none';
-
+ 
   try {
     const res = await fetch(API + '/match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ resumeText, jobDescription, jobTitle: j.title, company: j.co })
     });
-
+ 
     if (!res.ok) throw new Error('Server error ' + res.status);
     const data = await res.json();
     rmShowResult(data);
@@ -448,26 +445,26 @@ async function rmAnalyse() {
     tost('AI match failed — make sure the backend is running with ANTHROPIC_API_KEY set.', 'warn');
   }
 }
-
+ 
 function rmShowResult(d) {
   document.getElementById('rmSpinner').style.display = 'none';
-
+ 
   const score = Math.max(0, Math.min(100, d.matchScore || 0));
   const verdict = d.verdict || '';
   const verdictClass = score >= 85 ? 'strong' : score >= 65 ? 'good' : score >= 40 ? 'partial' : 'weak';
-
+ 
   // SVG ring
   const r = 34, cx = 40, cy = 40, circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
   const ringColor = score >= 85 ? 'var(--green)' : score >= 65 ? 'var(--accent)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
-
+ 
   const strHTML = (d.strengths || []).map(s =>
     `<li><span class="rm-dot">✓</span><span>${s}</span></li>`).join('');
   const gapHTML = (d.gaps || []).map(g =>
     `<li><span class="rm-dot">✕</span><span>${g}</span></li>`).join('');
   const tipHTML = (d.tips || []).map(t =>
     `<li><span class="rm-dot">→</span><span>${t}</span></li>`).join('');
-
+ 
   document.getElementById('rmResult').innerHTML = `
     <div class="rm-score-wrap">
       <div class="rm-ring">
@@ -491,7 +488,7 @@ function rmShowResult(d) {
   `;
   document.getElementById('rmResult').style.display = 'block';
 }
-
+ 
 function rmReset() {
   rmFileText = '';
   document.getElementById('rmFileIn').value = '';
@@ -501,10 +498,10 @@ function rmReset() {
   document.getElementById('rmAnalyseBtn').style.display = 'block';
   rmSetTab('file');
 }
-
+ 
 // ── Auth ──────────────────────────────────────────────────────────────────
 let currentUser = null;
-
+ 
 async function authCheck() {
   try {
     const res = await fetch(API.replace('/api', '') + '/api/auth/me', { credentials: 'include' });
@@ -515,39 +512,39 @@ async function authCheck() {
     }
   } catch (_) {}
 }
-
+ 
 function renderUserNav(user) {
   const navAuth = document.getElementById('navAuth');
   const initial = user.name?.charAt(0).toUpperCase() || '?';
   const avatarHTML = user.avatar
     ? `<img class="nav-avatar" src="${user.avatar}" alt="${user.name}" referrerpolicy="no-referrer">`
     : `<div class="nav-avatar-placeholder">${initial}</div>`;
-
+ 
   navAuth.innerHTML = `
     <button class="nav-user" onclick="toggleMenu(event)">
       ${avatarHTML}
       <span class="nav-user-name">${user.name.split(' ')[0]}</span>
       <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="color:var(--muted);flex-shrink:0"><path d="M6 8L1 3h10z"/></svg>
     </button>`;
-
+ 
   document.getElementById('menuName').textContent  = user.name;
   document.getElementById('menuEmail').textContent = user.email;
 }
-
+ 
 function toggleMenu(e) {
   e.stopPropagation();
   document.getElementById('userMenu').classList.toggle('open');
 }
 function closeMenu() { document.getElementById('userMenu').classList.remove('open'); }
 document.addEventListener('click', closeMenu);
-
+ 
 function openAuth() { op('authO'); }
-
+ 
 function authWithGoogle() {
   // Full-page redirect to backend OAuth entry point
   window.location.href = (API.replace('/api', '')) + '/api/auth/google';
 }
-
+ 
 async function authLogout() {
   closeMenu();
   await fetch(API.replace('/api', '') + '/api/auth/logout', {
@@ -561,13 +558,13 @@ async function authLogout() {
     </button>`;
   tost('Signed out — see you soon!', 'warn');
 }
-
+ 
 // Guard "Post a Job" behind login
 function guardedPost() {
   if (!currentUser) { openAuth(); tost('Sign in to post a job listing.', 'warn'); return; }
   openPost();
 }
-
+ 
 // Handle ?auth=success or ?auth=fail redirect from Google callback
 function handleAuthRedirect() {
   const params = new URLSearchParams(window.location.search);
@@ -581,7 +578,7 @@ function handleAuthRedirect() {
     window.history.replaceState({}, '', window.location.pathname);
   }
 }
-
+ 
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   updSaved();
@@ -598,11 +595,10 @@ async function init() {
   } else window._J = JOBS;
   render();
 }
-
+ 
 // Add authO to escape handler
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') ['dO','aO','pO','svO','rmO','authO'].forEach(cl);
 });
-
+ 
 init();
-
