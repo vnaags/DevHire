@@ -107,8 +107,8 @@ const JOBS=[
 
 // ── Color system ──
 const CLR=[{bg:'rgba(0,212,255,0.1)',c:'#00d4ff'},{bg:'rgba(124,58,237,0.1)',c:'#a78bfa'},{bg:'rgba(6,255,165,0.08)',c:'#06ffa5'},{bg:'rgba(255,183,3,0.1)',c:'#ffb703'},{bg:'rgba(255,77,109,0.08)',c:'#ff4d6d'},{bg:'rgba(99,179,237,0.1)',c:'#63b3ed'},{bg:'rgba(236,72,153,0.08)',c:'#f472b6'},{bg:'rgba(52,211,153,0.08)',c:'#34d399'}];
-function clr(s){if(!s)return CLR[0];let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))%CLR.length;return CLR[h]}
-function ini(s){if(!s)return'??';return s.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+function clr(s){if(!s||typeof s!=='string')return CLR[0];let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))%CLR.length;return CLR[h]}
+function ini(s){if(!s||typeof s!=='string')return'??';return s.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
 function ago(d){if(d===0)return'just now';if(d===1)return'1d ago';return d+'d ago'}
 
 // ── API ──
