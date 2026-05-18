@@ -1,4 +1,4 @@
-const API='http://localhost:5000/api';
+const API='https://devhire-jdmi.onrender.com';
 let useApi=false,aType='all',aCat='all',sortV='new',srch='',curJ=null,dbT=null;
 let saved=new Set(JSON.parse(localStorage.getItem('dh_sv')||'[]'));
 

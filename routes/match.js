@@ -3,6 +3,7 @@ const router = express.Router();
 const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+console.log('🔑 API Key loaded:', process.env.ANTHROPIC_API_KEY ? 'YES ✅' : 'MISSING ❌');
 
 /**
  * POST /api/match
@@ -46,7 +47,7 @@ Be honest and specific. Strengths and gaps must reference actual skills/experien
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }]
     });
