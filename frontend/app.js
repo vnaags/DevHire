@@ -113,13 +113,18 @@ function ago(d){if(d===0)return'just now';if(d===1)return'1d ago';return d+'d ag
 
 // ── API ──
 async function chkApi(){
-  try{const r=await fetch(API+'/jobs',{signal:AbortSignal.timeout(3000)});if(r.ok){useApi=true;updBar(true);return true}}catch{}
+  updBar(false, true);
+  try{const r=await fetch(API+'/jobs',{signal:AbortSignal.timeout(20000)});if(r.ok){useApi=true;updBar(true);return true}}catch{}
   updBar(false);return false;
 }
-function updBar(live){
+function updBar(live, loading=false){
   document.getElementById('apiDot').className='api-dot'+(live?' live':'');
-  document.getElementById('apiTxt').textContent=live?'Backend connected — data live from MongoDB':'Demo mode — 20 companies loaded. Run backend to connect MongoDB.';
-  document.getElementById('apiTxt').style.color=live?'var(--green)':'var(--amber)';
+  document.getElementById('apiTxt').textContent=
+    loading?'Waking up server, please wait...':
+    live?'Backend connected — data live from MongoDB':
+    'Demo mode — 20 companies loaded. Run backend to connect MongoDB.';
+  document.getElementById('apiTxt').style.color=
+    loading?'var(--amber)':live?'var(--green)':'var(--amber)';
 }
 
 // ── Filter & Sort ──
