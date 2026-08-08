@@ -8,26 +8,31 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 // Google OAuth callback
+// Google OAuth callback
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+  passport.authenticate('google', { failureRedirect: '/?auth=fail' }),
   (req, res) => {
-    res.redirect('/');
+    res.redirect('/?auth=success');
   }
 );
 
 // Get current logged in user
+// Get current logged in user
 router.get('/me', (req, res) => {
   if (req.isAuthenticated()) {
     res.json({
-      _id:    req.user._id,
-      name:   req.user.name,
-      email:  req.user.email,
-      avatar: req.user.avatar,
-      role:   req.user.role,
-      savedJobs: req.user.savedJobs
+      loggedIn: true,
+      user: {
+        _id:    req.user._id,
+        name:   req.user.name,
+        email:  req.user.email,
+        avatar: req.user.avatar,
+        role:   req.user.role,
+        savedJobs: req.user.savedJobs
+      }
     });
   } else {
-    res.status(401).json({ message: 'Not authenticated' });
+    res.json({ loggedIn: false });
   }
 });
 
