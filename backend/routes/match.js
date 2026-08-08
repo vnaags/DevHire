@@ -27,27 +27,32 @@ Respond ONLY with this JSON (no markdown, no extra text):
   "summary": "<2-3 sentence summary>"
 }`;
 
-    console.log('GEMINI_API_KEY exists:', !!process.env.GEMINI_API_KEY);
-    console.log('Making request to Gemini...');
+    console.log('GROQ_API_KEY exists:', !!process.env.GROQ_API_KEY);
+    console.log('Making request to Groq...');
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3
       })
     });
 
-    console.log('Gemini status:', response.status);
+    console.log('Groq status:', response.status);
 
     const data = await response.json();
-    console.log('Gemini raw response:', JSON.stringify(data));
+    console.log('Groq raw response:', JSON.stringify(data));
 
-    if (!data.candidates || !data.candidates[0]) {
-      return res.status(500).json({ message: 'Gemini API error', error: JSON.stringify(data) });
+    if (!data.choices || !data.choices[0]) {
+      return res.status(500).json({ message: 'Groq API error', error: JSON.stringify(data) });
     }
 
-    const raw = data.candidates[0].content.parts[0].text.trim();
+    const raw = data.choices[0].message.content.trim();
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
     res.json(parsed);
 
