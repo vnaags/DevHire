@@ -340,12 +340,16 @@ let rmFileText = '';
 
 function openMatcher() {
   if (!curJ) return;
-  const cl = clr(curJ.co);
+  const cl = clr(curJ.co || curJ.company);
+  const title = curJ.title;
+  const company = curJ.co || curJ.company;
+  const location = curJ.loc || curJ.location;
+
   document.getElementById('rmJobBar').innerHTML = `
-    <div style="width:34px;height:34px;border-radius:7px;background:${cl.bg};color:${cl.c};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;flex-shrink:0">${ini(curJ.co)}</div>
+    <div style="width:34px;height:34px;border-radius:7px;background:${cl.bg};color:${cl.c};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;flex-shrink:0">${ini(company)}</div>
     <div>
-      <div style="font-size:13px;font-weight:500;color:#fff">${curJ.title}</div>
-      <div style="font-size:11px;color:var(--muted)">${curJ.co} · ${curJ.loc}</div>
+      <div style="font-size:13px;font-weight:500;color:#fff">${title}</div>
+      <div style="font-size:11px;color:var(--muted)">${company} · ${location}</div>
     </div>`;
   rmFileText = '';
   rmSetTab('file');
@@ -407,11 +411,15 @@ async function rmAnalyse() {
   }
 
   const j = curJ;
+  const reqs = j.reqs || j.requirements || [];
+  const resp = j.resp || j.responsibilities || [];
+  const nth  = j.nth  || j.niceToHave    || [];
+
   const jobDescription = [
-    j.desc || '',
-    j.reqs && j.reqs.length ? 'Requirements:\n' + j.reqs.join('\n') : '',
-    j.resp && j.resp.length ? 'Responsibilities:\n' + j.resp.join('\n') : '',
-    j.nth  && j.nth.length  ? 'Nice to have:\n'    + j.nth.join('\n')  : ''
+   j.desc || j.description || '',
+   reqs.length ? 'Requirements:\n'    + reqs.join('\n') : '',
+   resp.length ? 'Responsibilities:\n' + resp.join('\n') : '',
+   nth.length  ? 'Nice to have:\n'     + nth.join('\n')  : ''
   ].filter(Boolean).join('\n\n');
 
   document.getElementById('rmAnalyseBtn').style.display = 'none';
@@ -427,8 +435,8 @@ async function rmAnalyse() {
         jobDescription,
         jobTitle: j.title,
         company: j.co,
-        requirements: j.reqs || []
-      })
+        requirements: reqs   
+     })
     });
 
     if (!res.ok) throw new Error('Server error ' + res.status);
