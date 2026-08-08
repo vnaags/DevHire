@@ -37,9 +37,11 @@ Respond ONLY with this JSON (no markdown, no extra text):
         'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3
+       model: 'llama-3.3-70b-versatile',
+       messages: [{ role: 'user', content: prompt }],
+       temperature: 0.3,
+       max_tokens: 500,
+       response_format: { type: 'json_object' }
       })
     });
 
